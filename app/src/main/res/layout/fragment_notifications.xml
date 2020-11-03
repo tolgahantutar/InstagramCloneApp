@@ -11,7 +11,7 @@
         android:id="@+id/app_bar_layout_notifications"
         android:background="@android:color/white">
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/search_notifications"
+            android:id="@+id/notification_toolbar"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="4dp"

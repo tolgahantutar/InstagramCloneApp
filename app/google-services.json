@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "788259455596",
+    "firebase_url": "https://instagram-clone-app-a4edb.firebaseio.com",
+    "project_id": "instagram-clone-app-a4edb",
+    "storage_bucket": "instagram-clone-app-a4edb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:788259455596:android:c2e7cb0961b738c2c04e49",
+        "android_client_info": {
+          "package_name": "com.tolgahantutar.instagramcloneapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "788259455596-dq09knql7c0heiksd46u1s155odrkqj3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCf7sdppBsITXn0zcc0R_1AvnjRD7AL_Fo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "788259455596-dq09knql7c0heiksd46u1s155odrkqj3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
