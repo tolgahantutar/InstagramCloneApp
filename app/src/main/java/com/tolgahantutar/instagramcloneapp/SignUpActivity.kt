@@ -64,8 +64,8 @@ class SignUpActivity : AppCompatActivity() {
 
         val userMap = HashMap<String,Any>()
         userMap["uid"]=currentUserID
-        userMap["fullname"] = fullName
-        userMap["username"] = userName
+        userMap["fullname"] = fullName.toLowerCase()
+        userMap["username"] = userName.toLowerCase()
         userMap["email"] = email
         userMap["bio"] = "Hey! I am using instagram clone :) "
         userMap["image"]="https://firebasestorage.googleapis.com/v0/b/instagram-clone-app-a4edb.appspot.com/o/Default%20Images%2Fprofile.png?alt=media&token=94b790ba-0a3e-4b5a-a683-c9d54f2c39dd"
