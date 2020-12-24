@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +23,7 @@ import com.tolgahantutar.instagramcloneapp.R
 import com.tolgahantutar.instagramcloneapp.adapter.MyImagesAdapter
 import com.tolgahantutar.instagramcloneapp.model.Post
 import com.tolgahantutar.instagramcloneapp.model.User
+import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.fragment_profile.view.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -32,6 +34,11 @@ class ProfileFragment : Fragment() {
 
     var postList: List<Post>? = null
     var myImagesAdapter: MyImagesAdapter? = null
+
+    var myImagesAdapterSavedImages: MyImagesAdapter? = null
+    var postListSaved: List<Post>? = null
+    var mySavedImg: List<String>? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -51,6 +58,7 @@ class ProfileFragment : Fragment() {
             checkFollowAndFollowingButtonStatus()
         }
 
+        //recyclerview for upload image
         var recyclerViewUploadImages: RecyclerView
         recyclerViewUploadImages = view.findViewById(R.id.recycler_view_upload_pic)
         recyclerViewUploadImages.setHasFixedSize(true)
@@ -59,6 +67,35 @@ class ProfileFragment : Fragment() {
         postList = ArrayList()
         myImagesAdapter = MyImagesAdapter(requireContext(), postList as ArrayList<Post>)
         recyclerViewUploadImages.adapter = myImagesAdapter
+
+        //recyclerview for saved image
+        var recyclerViewSavedImages: RecyclerView
+        recyclerViewSavedImages = view.findViewById(R.id.recycler_view_saved_pic)
+        recyclerViewSavedImages.setHasFixedSize(true)
+        val linearLayoutManager2: LinearLayoutManager = GridLayoutManager(requireContext(),3)
+        recyclerViewSavedImages.layoutManager = linearLayoutManager2
+        postListSaved = ArrayList()
+        myImagesAdapterSavedImages = MyImagesAdapter(requireContext(), postListSaved as ArrayList<Post>)
+        recyclerViewSavedImages.adapter = myImagesAdapterSavedImages
+
+        recyclerViewSavedImages.visibility = View.GONE
+        recyclerViewUploadImages.visibility = View.VISIBLE
+
+
+        var uploadedImagesBtn: ImageButton
+        uploadedImagesBtn = view.findViewById(R.id.images_grid_view_btn)
+        uploadedImagesBtn.setOnClickListener {
+            recyclerViewSavedImages.visibility = View.GONE
+            recyclerViewUploadImages.visibility = View.VISIBLE
+        }
+
+        var savedImagesBtn: ImageButton
+        savedImagesBtn = view.findViewById(R.id.images_save_btn)
+        savedImagesBtn.setOnClickListener {
+            recyclerViewSavedImages.visibility = View.VISIBLE
+            recyclerViewUploadImages.visibility = View.GONE
+        }
+
 
         view.edit_account_settings_btn.setOnClickListener {
             val getButtonText = view.edit_account_settings_btn.text.toString()
@@ -98,6 +135,8 @@ class ProfileFragment : Fragment() {
         getFollowing()
         getUserInfo()
         myPhotos()
+        getTotalNumberOfPosts()
+        mySaves()
         return view
     }
 
@@ -224,5 +263,79 @@ class ProfileFragment : Fragment() {
         val pref = context?.getSharedPreferences("PREFS",Context.MODE_PRIVATE)?.edit()
         pref?.putString("profileId",firebaseUser.uid)
         pref?.apply()
+    }
+    private fun getTotalNumberOfPosts(){
+        val postRef = FirebaseDatabase.getInstance().reference.child("Posts")
+
+        postRef.addValueEventListener(object: ValueEventListener{
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()){
+                    var postCounter = 0
+
+                    for (snapshot in dataSnapshot.children){
+                        val post = snapshot.getValue(Post::class.java)
+                        if (post!!.publisher == profileId){
+                            postCounter++
+                        }
+                    }
+                    total_posts.text = " "+ postCounter
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+    }
+
+    private fun mySaves(){
+        mySavedImg = ArrayList()
+
+        val savedRef = FirebaseDatabase.getInstance()
+            .reference
+            .child("Saves")
+            .child(firebaseUser.uid)
+
+        savedRef.addValueEventListener(object: ValueEventListener{
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for (snapshot in dataSnapshot.children){
+                        (mySavedImg as ArrayList<String>).add(snapshot.key!!)
+                    }
+                    readSavedImagesData()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+
+    }
+
+    private fun readSavedImagesData() {
+        val postRef = FirebaseDatabase.getInstance().reference.child("Posts")
+
+        postRef.addValueEventListener(object: ValueEventListener{
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(dataSnapshot.exists()){
+                    (postListSaved as ArrayList<Post>).clear()
+                    for(snapshot in dataSnapshot.children){
+                        val post = snapshot.getValue(Post::class.java)
+
+                        for(key in mySavedImg!!){
+                            if (post!!.postid == key){
+                                (postListSaved as ArrayList<Post>).add(post)
+                            }
+                        }
+                    }
+                    myImagesAdapterSavedImages!!.notifyDataSetChanged()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
     }
 }

@@ -51,6 +51,7 @@ class PostAdapter(private val mContext: Context,
         isLikes(post.postid,  holder.likeButton)
         numberOfLikes(holder.likes, post.postid)
         numberOfComments(holder.comments, post.postid)
+        checkSavedStatus(post.postid, holder.saveButton)
 
         holder.likeButton.setOnClickListener {
             if(holder.likeButton.tag == "Like"){
@@ -80,6 +81,15 @@ class PostAdapter(private val mContext: Context,
             intent.putExtra("postId",post.postid)
             intent.putExtra("publisherId",post.publisher)
             mContext.startActivity(intent)
+        }
+        holder.saveButton.setOnClickListener {
+        if(holder.saveButton.tag == "Save"){
+            FirebaseDatabase.getInstance().reference.child("Saves")
+                .child(firebaseUser!!.uid).child(post.postid).setValue(true)
+        }else{
+            FirebaseDatabase.getInstance().reference.child("Saves")
+                .child(firebaseUser!!.uid).child(post.postid).removeValue()
+        }
         }
     }
 
@@ -169,6 +179,28 @@ class PostAdapter(private val mContext: Context,
                     userName!!.text = user.username
                     publisher!!.text = user.fullname
                 }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+    }
+
+
+    private fun checkSavedStatus(postid: String, imageView: ImageView){
+       val savesRef = FirebaseDatabase.getInstance().reference.child("Saves")
+            .child(firebaseUser!!.uid)
+
+        savesRef.addValueEventListener(object: ValueEventListener{
+            override fun onDataChange(p0: DataSnapshot) {
+            if(p0.child(postid).exists()){
+                imageView.setImageResource(R.drawable.save_large_icon)
+                imageView.tag = "Saved"
+            }else{
+                imageView.setImageResource(R.drawable.save_unfilled_large_icon)
+                imageView.tag = "Save"
+            }
             }
 
             override fun onCancelled(error: DatabaseError) {

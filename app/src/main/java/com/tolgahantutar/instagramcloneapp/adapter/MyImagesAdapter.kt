@@ -6,9 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.annotation.NonNull
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import com.tolgahantutar.instagramcloneapp.R
+import com.tolgahantutar.instagramcloneapp.fragments.PostDetailFragment
 import com.tolgahantutar.instagramcloneapp.model.Post
 
 class MyImagesAdapter (private val mContext: Context,private val mPost: List<Post>)
@@ -21,6 +23,14 @@ class MyImagesAdapter (private val mContext: Context,private val mPost: List<Pos
     override fun onBindViewHolder(holder: MyImagesAdapter.ViewHolder, position: Int) {
         val post: Post = mPost[position]
         Picasso.get().load(post.postimage).into(holder.postImage)
+
+        holder.postImage.setOnClickListener {
+            val editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit()
+            editor.putString("postId",post.postid)
+            editor.apply()
+            (mContext as FragmentActivity).getSupportFragmentManager().beginTransaction().
+            replace(R.id.fragment_container, PostDetailFragment()).commit()
+        }
     }
 
     override fun getItemCount(): Int = mPost.size
