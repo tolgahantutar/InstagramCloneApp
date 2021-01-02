@@ -10,6 +10,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat.startActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -21,8 +23,12 @@ import com.squareup.picasso.Picasso
 import com.tolgahantutar.instagramcloneapp.CommentsActivity
 import com.tolgahantutar.instagramcloneapp.MainActivity
 import com.tolgahantutar.instagramcloneapp.R
+import com.tolgahantutar.instagramcloneapp.ShowUsersActivity
+import com.tolgahantutar.instagramcloneapp.fragments.PostDetailFragment
+import com.tolgahantutar.instagramcloneapp.fragments.ProfileFragment
 import com.tolgahantutar.instagramcloneapp.model.Post
 import com.tolgahantutar.instagramcloneapp.model.User
+import kotlinx.android.synthetic.main.activity_comments.*
 
 class PostAdapter(private val mContext: Context,
                   private val mPost: List<Post>): RecyclerView.Adapter<PostAdapter.ViewHolder>() {
@@ -53,6 +59,39 @@ class PostAdapter(private val mContext: Context,
         numberOfComments(holder.comments, post.postid)
         checkSavedStatus(post.postid, holder.saveButton)
 
+        holder.postImage.setOnClickListener {
+            val editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit()
+            editor.putString("postId",post.postid)
+            editor.apply()
+            (mContext as FragmentActivity).getSupportFragmentManager().beginTransaction().
+            replace(R.id.fragment_container, PostDetailFragment()).commit()
+        }
+
+        holder.publisher.setOnClickListener {
+            val editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit()
+            editor.putString("profileId",post.publisher)
+            editor.apply()
+            (mContext as FragmentActivity).getSupportFragmentManager().beginTransaction().
+            replace(R.id.fragment_container, ProfileFragment()).commit()
+        }
+
+        holder.profileImage.setOnClickListener {
+            val editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit()
+            editor.putString("profileId",post.publisher)
+            editor.apply()
+            (mContext as FragmentActivity).getSupportFragmentManager().beginTransaction().
+            replace(R.id.fragment_container, ProfileFragment()).commit()
+        }
+
+        holder.postImage.setOnClickListener {
+            val editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit()
+            editor.putString("postId",post.postid)
+            editor.apply()
+            (mContext as FragmentActivity).getSupportFragmentManager().beginTransaction().
+            replace(R.id.fragment_container, PostDetailFragment()).commit()
+        }
+
+
         holder.likeButton.setOnClickListener {
             if(holder.likeButton.tag == "Like"){
                 FirebaseDatabase.getInstance().reference
@@ -60,6 +99,8 @@ class PostAdapter(private val mContext: Context,
                     .child(post.postid)
                     .child(firebaseUser!!.uid)
                     .setValue(true)
+
+                addNotification(post.publisher, post.postid)
             }else{
                 FirebaseDatabase.getInstance().reference
                     .child("Likes")
@@ -70,6 +111,14 @@ class PostAdapter(private val mContext: Context,
                 mContext.startActivity(intent)*/
             }
         }
+
+        holder.likes.setOnClickListener {
+            val intent = Intent(mContext, ShowUsersActivity::class.java)
+            intent.putExtra("id", post.postid)
+            intent.putExtra("title","likes")
+            mContext.startActivity(intent)
+        }
+
         holder.commentButton.setOnClickListener {
             val intent = Intent(mContext,CommentsActivity::class.java)
             intent.putExtra("postId",post.postid)
@@ -207,5 +256,18 @@ class PostAdapter(private val mContext: Context,
 
             }
         })
+    }
+    private fun addNotification(userId: String, postId: String){
+        val notiRef = FirebaseDatabase.getInstance().
+        reference.child("Notifications")
+            .child(userId)
+
+        val notiMap = HashMap<String,Any>()
+        notiMap["userid"] = firebaseUser!!.uid
+        notiMap["text"] = "liked your post"
+        notiMap["postid"] = postId
+        notiMap["ispost"] = true
+
+        notiRef.push().setValue(notiMap)
     }
 }

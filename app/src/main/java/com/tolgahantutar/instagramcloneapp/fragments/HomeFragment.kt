@@ -14,13 +14,18 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.tolgahantutar.instagramcloneapp.R
 import com.tolgahantutar.instagramcloneapp.adapter.PostAdapter
+import com.tolgahantutar.instagramcloneapp.adapter.StoryAdapter
 import com.tolgahantutar.instagramcloneapp.model.Post
+import com.tolgahantutar.instagramcloneapp.model.Story
 
 class HomeFragment : Fragment() {
 
     private var postAdapter: PostAdapter? = null
     private var postList: MutableList<Post>? = null
-    private var followingList: MutableList<Post>? = null
+    private var followingList: MutableList<String>? = null
+
+    private var storyAdapter: StoryAdapter? = null
+    private var storyList: MutableList<Story>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +38,8 @@ class HomeFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
         var recyclerView: RecyclerView?= null
+        var recyclerViewStory: RecyclerView? = null
+
         recyclerView = view.findViewById(R.id.recycler_view_home)
         val linearLayoutManager = LinearLayoutManager(requireContext())
         linearLayoutManager.reverseLayout = true
@@ -42,6 +49,16 @@ class HomeFragment : Fragment() {
         postList = ArrayList()
         postAdapter = PostAdapter(requireContext(),postList as ArrayList<Post>)
         recyclerView.adapter = postAdapter
+
+
+        recyclerViewStory = view.findViewById(R.id.recycler_view_story)
+        recyclerView.setHasFixedSize(true)
+        val linearLayoutManager2 = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewStory.layoutManager = linearLayoutManager2
+
+        storyList = ArrayList()
+        storyAdapter = context?.let { StoryAdapter(it, storyList as ArrayList<Story>) }
+        recyclerViewStory.adapter = storyAdapter
 
         checkFollowings()
 
@@ -67,6 +84,7 @@ class HomeFragment : Fragment() {
                         }
                     }
                     retrievePosts()
+                    retrieveStories()
                 }
             }
 
@@ -75,6 +93,8 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
+
 
     private fun retrievePosts() {
         val postRef = FirebaseDatabase.getInstance().reference
@@ -94,6 +114,38 @@ class HomeFragment : Fragment() {
                         postAdapter!!.notifyDataSetChanged()
                     }
                 }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+    }
+    private fun retrieveStories() {
+        val storyRef = FirebaseDatabase.getInstance().reference
+            .child("Story")
+        storyRef.addValueEventListener(object: ValueEventListener{
+            override fun onDataChange(datasnapshot: DataSnapshot) {
+            val timeCurrent = System.currentTimeMillis()
+
+                (storyList as ArrayList<Story>).clear()
+                (storyList as ArrayList<Story>).add(Story("", 0, 0, "", FirebaseAuth.getInstance().currentUser!!.uid))
+
+                for (id in followingList!!){
+                    var countStory = 0
+                    var story: Story? = null
+                    for (snapshot in datasnapshot.child(id).children){
+                        story = snapshot.getValue(Story::class.java)
+
+                        if (timeCurrent>story!!.timestart && timeCurrent<story.timeend){
+                            countStory++
+                        }
+                    }
+                    if (countStory>0){
+                        (storyList as ArrayList<Story>).add(story!!)
+                    }
+                }
+                storyAdapter!!.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {

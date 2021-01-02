@@ -20,6 +20,7 @@ import com.google.firebase.database.ValueEventListener
 import com.squareup.picasso.Picasso
 import com.tolgahantutar.instagramcloneapp.AccountSettingsActivity
 import com.tolgahantutar.instagramcloneapp.R
+import com.tolgahantutar.instagramcloneapp.ShowUsersActivity
 import com.tolgahantutar.instagramcloneapp.adapter.MyImagesAdapter
 import com.tolgahantutar.instagramcloneapp.model.Post
 import com.tolgahantutar.instagramcloneapp.model.User
@@ -96,6 +97,18 @@ class ProfileFragment : Fragment() {
             recyclerViewUploadImages.visibility = View.GONE
         }
 
+        view.total_followers.setOnClickListener {
+            val intent = Intent(requireContext(), ShowUsersActivity::class.java)
+            intent.putExtra("id", profileId)
+            intent.putExtra("title","followers")
+            startActivity(intent)
+        }
+        view.total_following.setOnClickListener {
+            val intent = Intent(requireContext(), ShowUsersActivity::class.java)
+            intent.putExtra("id", profileId)
+            intent.putExtra("title","following")
+            startActivity(intent)
+        }
 
         view.edit_account_settings_btn.setOnClickListener {
             val getButtonText = view.edit_account_settings_btn.text.toString()
@@ -114,6 +127,7 @@ class ProfileFragment : Fragment() {
                             .child("Followers").child(it1)
                             .setValue(true)
                     }
+                    addNotification()
                 }
                 getButtonText == "Following"->{
                     firebaseUser?.uid.let{it1->
@@ -337,5 +351,18 @@ class ProfileFragment : Fragment() {
 
             }
         })
+    }
+    private fun addNotification(){
+        val notiRef = FirebaseDatabase.getInstance().
+        reference.child("Notifications")
+            .child(profileId)
+
+        val notiMap = HashMap<String,Any>()
+        notiMap["userid"] = firebaseUser!!.uid
+        notiMap["text"] = "started following you"
+        notiMap["postid"] = ""
+        notiMap["ispost"] = false
+
+        notiRef.push().setValue(notiMap)
     }
 }

@@ -42,6 +42,7 @@ class CommentsAdapter (private val mContext: Context,
     override fun getItemCount(): Int {
     return mComment!!.size
     }
+
     inner class ViewHolder(@NonNull itemView: View): RecyclerView.ViewHolder(itemView){
     var imageProfile: CircleImageView = itemView.findViewById(R.id.user_profile_image_comment)
     var userNameTV: TextView = itemView.findViewById(R.id.user_name_comment)
