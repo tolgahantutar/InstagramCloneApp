@@ -7,5 +7,5 @@ class Story(imageurl: String, timestart: Long, timeend: Long, storyid: String, u
      var storyid = storyid
      var userid = userid
 
-     constructor(): this("",0L,0L,"","")
+     constructor(): this("",0L,0L,"","")g
 }
